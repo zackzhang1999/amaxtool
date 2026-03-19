@@ -11,3 +11,4 @@ sum
 *.swp
 *.swo
 *~
+.git
