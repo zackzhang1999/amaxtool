@@ -1,0 +1,12 @@
+echo "------------------------------"
+echo "正在安装rc.local服务"
+sleep 2
+sudo cp rc-local.service  /etc/systemd/system/rc-local.service
+sudo cp rc.local /etc/
+chmod +x /etc/rc.local
+sudo systemctl daemon-reload
+sudo systemctl enable rc-local
+sudo systemctl restart rc-local 
+echo "安装完成"
+echo "查看服务状态请输入 systemctl status rc-local"
+echo "------------------------------"

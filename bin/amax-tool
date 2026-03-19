@@ -1,0 +1,117 @@
+#!/bin/bash
+#===============================================================================
+# AMAX Tool - Main Entry Point
+# Description: Unified tool for system management and hardware testing
+# Version: 2.0
+#===============================================================================
+
+set -o pipefail
+
+# Get script directory (handle symlink)
+SCRIPT_SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT_SOURCE" ]; do
+    SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+    SCRIPT_SOURCE="$(readlink "$SCRIPT_SOURCE")"
+    [[ $SCRIPT_SOURCE != /* ]] && SCRIPT_SOURCE="$SCRIPT_DIR/$SCRIPT_SOURCE"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")/.." && pwd)"
+
+# Source libraries
+source "$SCRIPT_DIR/lib/core.sh" || { echo "Failed to load core library"; exit 1; }
+source "$SCRIPT_DIR/lib/env.sh" || { echo "Failed to load env library"; exit 1; }
+source "$SCRIPT_DIR/lib/utils.sh" || { echo "Failed to load utils library"; exit 1; }
+
+# Initialize
+init_hw_info
+log_info "AMAX Tool started"
+
+#-------------------------------------------------------------------------------
+# Main Menu
+#-------------------------------------------------------------------------------
+show_main_menu() {
+    clear
+    print_header "AMAX 服务器管理工具 v2.0"
+    echo "  1. 系统信息"
+    echo "  2. 日志收集"
+    echo "  3. 软件安装"
+    echo "  4. 系统维护"
+    echo "  5. 硬件测试"
+    echo "  6. 磁盘检查"
+    echo "  7. 运行环境检测"
+    echo "  q. 退出"
+    print_separator
+}
+
+#-------------------------------------------------------------------------------
+# Module Runners
+#-------------------------------------------------------------------------------
+run_module() {
+    local module="$1"
+    local script="$SCRIPT_DIR/modules/$module/run.sh"
+    
+    if [[ -x "$script" ]]; then
+        log_info "Running module: $module"
+        "$script"
+    else
+        log_error "Module not found: $module"
+        echo "按回车键继续..."
+        read -r
+    fi
+}
+
+run_check() {
+    local script="$SCRIPT_DIR/modules/check/run.sh"
+    if [[ -x "$script" ]]; then
+        "$script"
+    else
+        log_error "Check script not found"
+    fi
+    echo "按回车键继续..."
+    read -r
+}
+
+#-------------------------------------------------------------------------------
+# Main Loop
+#-------------------------------------------------------------------------------
+main() {
+    while true; do
+        show_main_menu
+        read -rp "请选择操作: " choice
+        
+        case "$choice" in
+            1)
+                run_module "sysinfo"
+                ;;
+            2)
+                run_module "getlog"
+                ;;
+            3)
+                run_module "soft"
+                ;;
+            4)
+                run_module "system"
+                ;;
+            5)
+                run_module "hwtest"
+                ;;
+            6)
+                run_module "diskcheck"
+                ;;
+            7)
+                run_check
+                ;;
+            q|Q)
+                echo_green "感谢使用，再见！"
+                log_info "AMAX Tool exited"
+                exit 0
+                ;;
+            *)
+                log_warn "无效的选择，请重新输入"
+                sleep 1
+                ;;
+        esac
+    done
+}
+
+# Run main
+main "$@"
