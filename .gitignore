@@ -1,0 +1,13 @@
+*.log
+*.o
+*.so
+*.a
+*.out
+stream
+storcli64
+ipmicfg
+sum
+.DS_Store
+*.swp
+*.swo
+*~
